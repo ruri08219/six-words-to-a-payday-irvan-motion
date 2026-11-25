@@ -29,6 +29,8 @@ MAX_WORDS = 6
 def validate(text):
     if not text or not text.strip():
         raise SystemExit("entry is empty")
+    if text != text.strip():
+        raise SystemExit("entry has leading or trailing whitespace")
     if len(text) > MAX_CHARS:
         raise SystemExit("entry exceeds 60 characters")
     if "\n" in text or "\r" in text:
@@ -55,6 +57,11 @@ def main():
     os.makedirs("/output", exist_ok=True)
     with open("/output/entry.txt", "w", encoding="utf-8", newline="") as f:
         f.write(entry)
+    # Write round-trip verification: re-read the bytes and confirm they
+    # are exactly the UTF-8 encoding of the validated entry.
+    with open("/output/entry.txt", "rb") as f:
+        if f.read() != entry.encode("utf-8"):
+            raise SystemExit("entry.txt round-trip verification failed")
 
 
 if __name__ == "__main__":
